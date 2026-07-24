@@ -4,6 +4,7 @@ import integrado.prog2.entities.*;
 import integrado.prog2.enums.Estado;
 import integrado.prog2.exception.ValidacionException;
 import integrado.prog2.config.Utilitarios;
+import integrado.prog2.enums.FormaPago;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,8 @@ public class PedidoService {
             System.out.println("1. Crear Pedido");
             System.out.println("2. Agregar Producto al Pedido");
             System.out.println("3. Listar Pedidos");
-            System.out.println("4. Cambiar Estado");
+            System.out.println("4. Actualizar Estado");
+            System.out.println("5. Actualizar Forma de pago");
             System.out.println("0. Volver");
             op = Utilitarios.leerInt(sc, "Seleccione: ");
             try{
@@ -37,6 +39,7 @@ public class PedidoService {
                     case 2 -> agregarProductoConsola();
                     case 3 -> listarPedidos();
                     case 4 -> cambiarEstadoConsola();
+                    case 5 -> actualizarFormaPago();
                 }
             }catch(ValidacionException e){
                 System.out.println(" " + e.getMessage());
@@ -63,13 +66,37 @@ public class PedidoService {
     }
 
     private void cambiarEstadoConsola() {
-        listarPedidos();
-        Long idPedido = (long) Utilitarios.leerInt(sc, "ID Pedido: ");
-        System.out.println("Estados: PENDIENTE, ENVIADO, ENTREGADO, CANCELADO");
-        String est = Utilitarios.leerString(sc, "Nuevo Estado: ").toUpperCase();
-        cambiarEstadoPedido(idPedido, Estado.valueOf(est));
+    listarPedidos();
+    Long id = (long) Utilitarios.leerInt(sc, "ID Pedido: ");
+    Pedido p = buscarPorId(id);
+    if(p == null) { Utilitarios.mostrarMensaje("Error! Pedido no existe"); return; }
+    
+    System.out.println("Estados: 1-PENDIENTE 2-CONFIRMADO 3-TERMINADO 4-CANCELADO");
+    int est = Utilitarios.leerInt(sc, "Nuevo Estado: ");
+    
+    if (est < 1 || est > Estado.values().length) {
+        Utilitarios.mostrarMensaje(">>> Error! Estado invalido");
+        return;
     }
-
+    p.setEstado(Estado.values()[est-1]);
+    Utilitarios.mostrarMensaje(">>> Estado actualizado a: " + p.getEstado());
+}
+private void actualizarFormaPago() {
+    listarPedidos();
+    Long id = (long) Utilitarios.leerInt(sc, "ID Pedido: ");
+    Pedido p = buscarPorId(id);
+    if(p == null) { Utilitarios.mostrarMensaje("Error! Pedido no existe"); return; }
+    
+    System.out.println("Formas de Pago: 1-TARJETA 2-TRANSFERENCIA 3-EFECTIVO");
+    int fp = Utilitarios.leerInt(sc, "Nueva Forma de Pago: ");
+    
+    if (fp < 1 || fp > FormaPago.values().length) {
+        Utilitarios.mostrarMensaje(">>> Error! Forma de pago invalida");
+        return;
+    }
+    p.setFormapago(FormaPago.values()[fp-1]); // se le coloca -1 para que cuente el arreglo desde 1
+    Utilitarios.mostrarMensaje(">>> Forma de pago actualizada a: " + p.getFormapago());
+}
     public void crearPedido(Long idUsuario) {
         Usuario usuario = usuarioService.buscarPorId(idUsuario);
         if (usuario == null) {
@@ -87,7 +114,7 @@ public class PedidoService {
             throw new ValidacionException("El pedido no existe");
         }
         if (pedido.getEstado() != Estado.PENDIENTE) {
-            throw new ValidacionException("No se pueden modificar pedidos que no estén pendientes");
+            throw new ValidacionException("No se pueden modificar pedidos que no esten pendientes");
         }
         if (cantidad <= 0) { 
             throw new ValidacionException("La cantidad debe ser mayor a 0");
@@ -113,7 +140,7 @@ public class PedidoService {
             throw new ValidacionException("El pedido no existe");
         }
         pedido.setEstado(nuevoEstado);
-        Utilitarios.mostrarMensaje("Estado cambiado a: " + nuevoEstado);
+        
     }
 
     public void listarPedidos() {
@@ -122,9 +149,12 @@ public class PedidoService {
             return;
         }
         for (Pedido p : pedidos) {
+            String Formapago = (p.getFormapago() != null) ? p.getFormapago().toString() : "No definida";
+           
             System.out.println("---------------------------------");
             System.out.println("ID: " + p.getId() + " | Usuario: " + p.getUsuario().getNombre());
             System.out.println("Fecha: " + p.getFecha() + " | Estado: " + p.getEstado());
+            System.out.println("Forma de pago: " + Formapago);
             System.out.println("Total: $" + p.getTotal());
             System.out.println("Detalles:");
             for (DetallePedido d : p.getDetalles()) {

@@ -16,10 +16,10 @@ public class Producto extends Base{
         this.nombre = nombre;
         this.precio = precio;
         this.descripcion = descripcion;
-        this.stock = stock;
+        setStock (stock);
         this.imagen = imagen;
         this.categoria = categoria;
-        this.disponible=true;
+        
     }
 
     public String getNombre() {
@@ -52,6 +52,7 @@ public class Producto extends Base{
 
     public void setStock(int stock) {
         this.stock = stock;
+        this.disponible = (stock > 0);
     }
 
     public String getImagen() {
@@ -79,10 +80,10 @@ public class Producto extends Base{
     }
 
     @Override
-    public String toString() {
-        return String.format("Producto: | ID:%d | Nombre:%s | Precio:%.2f | Descripcion: %s |Stock:%d | Imagen: %s| Categoria: %s Disponible:%b" ,
-                getId(), nombre,precio,descripcion,stock,imagen,categoria,disponible);
-    }
+public String toString() {
+    String nombreCategoria = (categoria != null) ? categoria.getNombre() : "Sin categoria";
     
-    
+    return String.format("Producto: | ID:%d | Nombre:%s | Precio:$%.2f | Descripcion: %s | Stock:%d | Imagen: %s | Categoria: %s | Disponible:%s",
+            getId(), nombre, precio, descripcion, stock, imagen, nombreCategoria, disponible ? "SI" : "NO");
+}
 }
